@@ -1,0 +1,296 @@
+* {
+    margin: (0,0,1);
+    padding: (0,0,1);
+}
+
+.wrapper {
+    margin: 0 auto;
+    width: 1000px;
+}
+
+.img-tapi {
+    width: 848px;
+    height: 480px;
+    background-image: url(img/chess.jpg);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position-x: center;
+    align-self: center;
+}
+
+.header .image {
+    background: url(img/logo_ime.png) 
+                no-repeat;
+    width: 50px;
+    height: 60px;
+    background-size: contain;
+}
+
+.header .text {
+    font: x-large sans-serif;
+    font-size: 40px;
+    color: #fff;
+}
+
+.header .image, 
+.header .text {
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+/**
+ *	Bootstrap
+ */
+/**
+ *	Button
+ */
+ .lfv-button {
+    background-color: #c8301e;
+    border-radius: 50%;
+    cursor: pointer;
+    height: 14px;
+    padding: 9px;
+    width: 14px;
+  }
+  .lfv-button_disabled {
+    background-color: #4f5157;
+    cursor: default;
+  }
+  .lfv-button:not(.lfv-button_disabled):hover,
+  .lfv-button_active {
+    background-color: #ff1900;
+  }
+  /**
+   *	Display canvas
+   */
+  .lfv-canvas {
+    background-color: #244ea0;
+    position: relative;
+  }
+  .lfv-canvas__display-container {
+    margin: 0 auto;
+    position: relative;
+  }
+  .lfv-canvas__display {
+    vertical-align: bottom;
+  }
+  .lfv-canvas__error {
+    color: #e4e4e4;
+    line-height: 32px;
+    margin-top: -32px;
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    width: 100%;
+  }
+  .lfv-canvas__error-icon {
+    height: 32px;
+    margin-right: 16px;
+    vertical-align: middle;
+    width: 32px;
+  }
+  .lfv-canvas__error-icon > circle:first-child,
+  .lfv-canvas__error-icon > path {
+    fill: none;
+    stroke: #db3c3c;
+    stroke-width: 2;
+  }
+  .lfv-canvas__error-icon > circle {
+    fill: #db3c3c;
+  }
+  .lfv-canvas__error-note {
+    font-size: 12px;
+  }
+  /**
+   *	Parent container
+   */
+  .lfv-container {
+    background-color: #141417;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 16px;
+  }
+  /**
+   *	Bottom control bar
+   */
+  .lfv-controls {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  .lfv-controls__row {
+    height: 80px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+  .lfv-controls__slider {
+    color: #676b62;
+    cursor: default;
+    float: left;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    margin: 22px 14px 0 14px;
+    text-align: center;
+  }
+  .lfv-controls__icon {
+    display: block;
+    float: left;
+    height: 26px;
+    margin: 0 18px;
+    width: 26px;
+  }
+  .lfv-controls__icon_focus {
+    fill: #4f5751;
+  }
+  .lfv-controls__icon_aperture > circle {
+    fill: #4f5157;
+  }
+  .lfv-controls__icon_aperture > path {
+    fill: #141417;
+  }
+  .lfv-controls__icon_aperture > line {
+    stroke: #141417;
+    stroke-width: 1.05;
+  }
+  .lfv-controls .lfv-slider {
+    float: left;
+  }
+  .lfv-controls__button {
+    float: left;
+    margin: 24px 8px;
+  }
+  .lfv-controls__button-icon {
+    display: block;
+    height: 14px;
+    width: 14px;
+  }
+  .lfv-controls__button-icon_screen > path {
+    fill: none;
+    stroke: #141417;
+    stroke-width: 2;
+  }
+  .lfv-controls__button-icon_help > path {
+    fill: none;
+    stroke: #141417;
+    stroke-width: 2;
+  }
+  .lfv-controls__button-icon_help > rect {
+    fill: #141417;
+  }
+  /**
+   *	Help window
+   */
+  .lfv-help {
+    background-color: #212125;
+    box-shadow: 0 0 32px rgba(0, 0, 0, 0.75);
+    color: #eee;
+    line-height: 1.4;
+    margin: 0 15%;
+    position: absolute;
+    top: 10%;
+  }
+  .lfv-help__header {
+    background-color: #303035;
+    height: 32px;
+    line-height: 32px;
+    padding: 12px 28px;
+  }
+  .lfv-help__close {
+    float: right;
+  }
+  .lfv-help__icon-close {
+    display: block;
+    height: 14px;
+    width: 14px;
+  }
+  .lfv-help__icon-close > line {
+    stroke: #141417;
+    stroke-width: 2;
+  }
+  .lfv-help__content {
+    box-sizing: border-box;
+    font-size: 14px;
+    overflow: auto;
+    padding: 22px 28px;
+  }
+  .lfv-help__content-splitter {
+    border-top: 1px solid #303035;
+    margin-top: 14px;
+    padding-top: 14px;
+  }
+  .lfv-help__content-title {
+    font-size: 16px;
+    padding-right: 28px;
+  }
+  /**
+   *	Refocus click indicator
+   */
+  .lfv-focus-marker {
+    display: block;
+    height: 64px;
+    pointer-events: none;
+    position: absolute;
+    width: 64px;
+  }
+  .lfv-focus-marker_hidden {
+    display: none;
+  }
+  /**
+   *	Loading indicator
+   */
+  .lfv-loader {
+    left: 50%;
+    margin: -64px 0 0 -64px;
+    position: absolute;
+    top: 50%;
+  }
+  .lfv-loader__canvas {
+    height: 128px;
+    width: 128px;
+  }
+  .lfv-loader__text {
+    color: #e4e4e4;
+    font-size: 18px;
+    left: 0;
+    line-height: 128px;
+    position: absolute;
+    text-align: center;
+    top: 0;
+    width: 128px;
+  }
+  /**
+   *	Horizontal slider
+   */
+  .lfv-slider {
+    height: 26px;
+  }
+  .lfv-slider__track {
+    background-color: #2e2f35;
+    border-radius: 3px;
+    display: inline-block;
+    height: 6px;
+    margin-top: 10px;
+    position: relative;
+  }
+  .lfv-slider__handle-container {
+    height: 32px;
+    margin: -13px 0 0 -16px;
+    position: absolute;
+    width: 32px;
+  }
+  .lfv-slider__handle-container:hover > .lfv-slider__handle {
+    border-color: #ff1900;
+  }
+  .lfv-slider__handle {
+    background-color: #141417;
+    border: 7px solid #c8301e;
+    border-radius: 50%;
+    height: 8px;
+    margin: 5px;
+    width: 8px;
+  }
+  .lfv-slider_active .lfv-slider__handle {
+    border-color: #ff1900;
+  }
+  

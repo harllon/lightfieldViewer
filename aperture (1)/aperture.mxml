@@ -1,0 +1,375 @@
+<?xml version="1.0"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="creationCompleteHandler();">
+
+    <mx:Script>
+<![CDATA[
+
+         // This is a flash light field viewer written by Andrew Adams
+         // http://www.stanford.edu/~abadams
+         // This code is public domain. 
+
+	 import flash.display.*;
+	 import flash.geom.Point;
+	 import mx.controls.Alert;
+	 import flash.net.URLRequest;
+	 import mx.events.*;
+	 import mx.collections.*;
+	 import mx.managers.*;
+	 import lightfield.*;
+
+	 private var lightField:LightField;
+
+	 private var params:Object;
+
+	 private var u:Number, v:Number, r:Number;
+
+	 private var helpIndex:int;
+
+	 private function creationCompleteHandler():void {
+	     getParameters(); 
+	     initializeVariables();
+	     setupEventHandlers();
+	     drawWholeAperture();
+	     drawSelectedAperture();
+	 }
+
+	 private function initializeVariables():void {
+	     u = v = 0.0;	  
+	     r = 0.01;
+	     if (params.lightField != null) {
+		 lightField = new LightField(params.lightField, loadProgressHandler);
+	     } else {
+		 lightField = null;
+	     }
+
+
+	 }
+
+	 private function getParameters():void {	     
+	     params = new Object();
+	     params.zoom = 1;
+	     params.aperture = "square";
+
+	     var pars:Object = Application.application.parameters;
+	     if (pars.hasOwnProperty("zoom")) params.zoom = Number(pars.zoom);
+	     if (pars.hasOwnProperty("aperture")) params.aperture = pars.aperture;
+	     if (pars.hasOwnProperty("lightfield")) params.lightField = pars.lightfield;
+	     else {
+		 Alert.show("No light field specified!");
+		 params.lightField = null
+	     }
+	 }	 
+	 
+	 private function layoutElements():void {	     
+	     if (lightField == null) return;
+
+	     var h:uint = lightField.height*params.zoom;
+	     var w:uint = lightField.width*params.zoom;deng.fzip
+	     if (h < 300) h = 300;
+	     if (w < 300) w = 300;
+
+	     apertureControl.height = h;
+	     canvas.height = h + 20;
+	     wholeAperture.y = apertureControl.height/2-100;
+	     angularSamples.y = wholeAperture.y;
+	     selectedAperture.width = r * wholeAperture.width;
+	     selectedAperture.height = r * wholeAperture.height;
+	     selectedAperture.y = wholeAperture.y + wholeAperture.height/2 - selectedAperture.height/2;
+	     selectedAperture.x = wholeAperture.x + wholeAperture.width/2 - selectedAperture.width/2;
+
+	     output.width = lightField.width*params.zoom;
+	     output.height = lightField.height*params.zoom;
+	     if (output.width < w) output.x = 300 + (w - output.width)/2;
+	     else output.x = 300;
+	     if (output.height < h) output.y = 10 + (h - output.height)/2;
+	     else output.y = 10;
+	     loadingProgressBar.x = output.x + output.width/2 - loadingProgressBar.width/2;
+	     loadingProgressBar.y = output.y + output.height/2 - loadingProgressBar.height/2;
+	     output.source = new Bitmap(new BitmapData(lightField.width, lightField.height));	     
+	 }
+
+	 private function setupEventHandlers():void {
+	     apertureControl.addEventListener(MouseEvent.MOUSE_MOVE, handleDrag);
+	     apertureControl.addEventListener(MouseEvent.MOUSE_DOWN, handleDrag);
+	     selectedAperture.mouseEnabled = false;
+	     wholeAperture.mouseEnabled = false;
+	     angularSamples.mouseEnabled = false;
+
+	     output.addEventListener(MouseEvent.MOUSE_DOWN, handleAutoFocus);
+	     focusSlider.addEventListener(SliderEvent.CHANGE, handleRefocus);
+
+	     pinholeButton.addEventListener(FlexEvent.BUTTON_DOWN, handlePinholeAperture);
+	     fullApertureButton.addEventListener(FlexEvent.BUTTON_DOWN, handleFullAperture);
+	     angularSamplesCheckBox.addEventListener(FlexEvent.BUTTON_DOWN, handleAngularSamples);
+
+	     helpButton.addEventListener(FlexEvent.BUTTON_DOWN, handleShowHelp);
+	     helpBackButton.addEventListener(FlexEvent.BUTTON_DOWN, handleBackHelp);
+	     helpNextButton.addEventListener(FlexEvent.BUTTON_DOWN, handleNextHelp);
+	     helpCloseButton.addEventListener(FlexEvent.BUTTON_DOWN, handleCloseHelp);
+	 }
+
+
+	 private function loadProgressHandler(current:uint, total:uint):void {
+	     loadingProgressBar.setProgress(current, total);
+
+	     // after loading the first image, we know the lightfield width and height
+	     // so we can layout all the UI elements
+	     if (lightField.width != 0) layoutElements();
+
+	     var currentMb:Number, totalMb:Number;
+
+	     if (lightField.viewsLoaded == lightField.views && lightField.views > 0) {
+		 loadingProgressBar.visible = false;
+		 render();		 
+	     } else if (lightField.viewsLoaded > 0) {
+		 currentMb = uint((current * lightField.width * lightField.height * 4)/(1024*1024));
+		 totalMb   = uint((total   * lightField.width * lightField.height * 4)/(1024*1024));
+		 loadingProgressBar.label = "Decompressing Light Field into RAM (" + currentMb + "/" + totalMb + " Mb) ...";
+	     } else {
+		 currentMb = uint(current/(1024*102.4))/10.0;
+		 totalMb   = uint(total/(1024*102.4))/10.0;
+		 loadingProgressBar.label = "Downloading Light Field (" + currentMb + "/" + totalMb + " Mb) ...";
+	     }
+	 }
+
+	 private function drawWholeAperture():void {
+	     
+	     wholeAperture.graphics.beginFill(0xAAAAAA);
+	     if (params.aperture == "square") {
+		 wholeAperture.graphics.drawRect(0, 0, wholeAperture.width, wholeAperture.height);
+	     } else {
+		 wholeAperture.graphics.drawCircle(wholeAperture.width/2, wholeAperture.height/2, wholeAperture.width/2);
+	     }
+	     
+	 }
+
+	 private function drawSelectedAperture():void {
+	     selectedAperture.graphics.clear();
+	     selectedAperture.graphics.beginFill(0xFFFFFF);
+	     selectedAperture.graphics.drawCircle(selectedAperture.width/2, selectedAperture.height/2, selectedAperture.width/2);
+	 }
+	 
+	 private function showHelp():void {
+	     var helpStates:int = 6;
+
+	     while (helpIndex < 0) helpIndex = 0;
+	     while (helpIndex >= helpStates) helpIndex = helpStates-1;
+	     if (helpIndex == 0) helpBackButton.enabled = false;
+	     else helpBackButton.enabled = true;
+	     if (helpIndex == helpStates -1 ) helpNextButton.enabled = false;
+	     else helpNextButton.enabled = true;
+
+	     if (helpIndex == 0) {
+		 helpText.text = "Once the light field has loaded, click and drag in the dark gray region below to change the point of view.";
+	     } else if (helpIndex == 1) {
+		 helpText.text = "Shift-click below to change the size of the synthetic aperture (the white circle).";
+	     } else if (helpIndex == 2) {
+		 helpText.text = "You can also click the 'Full Aperture' or 'Pinhole Aperture' buttons to change the size of the aperture.";
+	     } else if (helpIndex == 3) {
+		 helpText.text = "Click on the slider way over on the right to manually focus through the scene. It's best to do this with a medium-sized aperture.";
+	     } else if (helpIndex == 4) {
+		 helpText.text = "For some scenes, you can click on the image itself to autofocus at that point.";
+		 if (lightField != null) {
+		     if (lightField.hasDepthImage()) {
+			 helpText.text = "You can also click on the image itself to autofocus at that point. This works for this scene because I've computed a depth map, but may not work for some others.";
+		     } else {
+			 helpText.text = "For some scenes, you can click on the image itself to autofocus at that point. Unfortunately that won't work for this scene, because I haven't computed a depth map for it.";
+		     }
+
+
+		 }
+
+	     } else if (helpIndex == 5) {
+		 helpText.htmlText = "This viewer was written by <u><a href=\"http://www.stanford.edu/~abadams/\" target=\"_blank\">Andrew Adams</a></u> at Stanford University for use in the <u><a href=\"http://lightfield.stanford.edu\" target=\"_blank\">light field archive</a></u>.<br><br> The autofocus interaction was taken from Ren Ng at <u><a href=\"http://www.refocusimaging.com/\" target=\"_blank\">Refocus Imaging</a></u>.";
+	     }
+
+	 }
+
+	 private function handleNextHelp(event:FlexEvent):void {
+	     helpIndex += 1;
+	     showHelp();
+	 }
+
+	 private function handleBackHelp(event:FlexEvent):void {
+	     helpIndex -= 1;
+	     showHelp();
+	 }
+
+	 private function handleCloseHelp(event:FlexEvent):void {
+	     help.visible = false;
+	 }
+
+
+	 private function handleShowHelp(event:FlexEvent):void {
+	     help.visible = true;
+	     helpIndex = 0;
+	     helpButton.emphasized = false;
+	     showHelp();
+	     
+	     return;
+
+	     var depthImageExists:String = "No depth image was loaded for this scene. If you compute one, please email Andrew at abadams<at>stanford.edu";
+	     if (lightField != null && lightField.hasDepthImage()) {
+		 depthImageExists = "A depth image has been loaded for this scene - click away!"
+	     }
+	     Alert.show("Instructions:\n\nThis program is a light field viewer. The dark grey region on the left represents the entire (synthetic) aperture stored in this light field. The white circle within it is the portion of the aperture currently viewed. Click and drag on the white circle to move to different parts of the aperture, panning the scene. Shift click and drag on the white circle to enlarge or shrink the aperture viewed, changing the depth of field. Use the slider on the right to manually change the focus within the scene. Some scenes include a depth map, which allows you to autofocus at a point by clicking on the scene.\n\n" + depthImageExists + "\n\nThis software was written by Andrew Adams at Stanford University (http://www.stanford.edu/~abadams/).\n\nThe autofocus interaction is taken from Ren Ng at Refocus Imaging (http://www.refocusimaging.com/).");
+	 }
+
+	 private function handlePinholeAperture(event:FlexEvent):void {
+	     if (lightField == null || !lightField.isFullyLoaded()) return;
+	     r = 0.01;
+	     selectedAperture.x += selectedAperture.width/2;
+	     selectedAperture.y += selectedAperture.height/2;
+	     selectedAperture.width  = uint(r*wholeAperture.width*2);
+	     selectedAperture.height = uint(r*wholeAperture.height*2);
+	     selectedAperture.x -= selectedAperture.width/2;
+	     selectedAperture.y -= selectedAperture.height/2;
+	     drawSelectedAperture();
+	     render();
+	 }
+
+	 private function handleFullAperture(event:FlexEvent):void {
+	     if (lightField == null || !lightField.isFullyLoaded()) return;
+	     r = 0.5;
+	     u = 0;
+	     v = 0;
+	     selectedAperture.x = wholeAperture.x;
+	     selectedAperture.y = wholeAperture.y;
+	     selectedAperture.width = wholeAperture.width;
+	     selectedAperture.height = wholeAperture.height;
+	     drawSelectedAperture();
+	     render();
+	 }
+
+	 private function handleAngularSamples(event:FlexEvent):void {
+	     angularSamples.visible = !angularSamplesCheckBox.selected;
+	 }
+
+	 private function handleAutoFocus(event:MouseEvent):void {
+	     if (lightField == null || !lightField.isFullyLoaded()) return;
+	     var x:uint = uint(output.mouseX / params.zoom);
+	     var y:uint = uint(output.mouseY / params.zoom);
+	     var val:Number = lightField.autoFocus(x, y);
+	     if (val >= 0 && val <= 1) {
+		 focusSlider.value = val;
+		 render();
+	     }
+	 }
+
+	 private function handleRefocus(event:SliderEvent):void {
+	     render();
+	 }
+	 
+	 private function handleDrag(event:MouseEvent):void {
+	     if (lightField == null || !lightField.isFullyLoaded()) return;
+	     	     
+	     if (event.buttonDown) {
+		 // Get the location of the click in canvas coords
+		 var loc:Point = new Point(event.localX + event.target.x, event.localY + event.target.y)	
+	     
+		     // Get the center of the selected aperture in wholeAperture coords
+		     var apCenter:Point = new Point(selectedAperture.x + selectedAperture.width/2, 
+					    selectedAperture.y + selectedAperture.height/2);
+		 
+		 
+		 if (event.shiftKey) { 
+		     r = Point.distance(loc, apCenter)/wholeAperture.width;
+		     r += 0.01;
+		     selectedAperture.width  = uint(r*wholeAperture.width*2);
+		     selectedAperture.height = uint(r*wholeAperture.height*2);
+		     if (selectedAperture.width > wholeAperture.width) {
+			 selectedAperture.width = wholeAperture.width;
+			 selectedAperture.height = wholeAperture.height;
+			 r = 0.5;
+		     }
+		     selectedAperture.x = apCenter.x - selectedAperture.width/2;
+		     selectedAperture.y = apCenter.y - selectedAperture.height/2;
+		     drawSelectedAperture();
+		 } else { 
+		     selectedAperture.x = loc.x - selectedAperture.width / 2;
+		     selectedAperture.y = loc.y - selectedAperture.height / 2;
+		 }
+		 
+		 // now constrain the position to lie within the larger aperture
+		 apCenter.x = selectedAperture.x + selectedAperture.width/2;
+		 apCenter.y = selectedAperture.y + selectedAperture.height/2;
+		 var wholeApCenter:Point = new Point(wholeAperture.x + wholeAperture.width/2, wholeAperture.y + wholeAperture.height/2);		 	    
+		 if (params.aperture == "square") {
+		     if (selectedAperture.x < wholeAperture.x) selectedAperture.x = wholeAperture.x;
+		     if (selectedAperture.y < wholeAperture.y) selectedAperture.y = wholeAperture.y;
+		     if (selectedAperture.x + selectedAperture.width > wholeAperture.x + wholeAperture.width) 
+			 selectedAperture.x = wholeAperture.x + wholeAperture.width - selectedAperture.width;
+		     if (selectedAperture.y + selectedAperture.height > wholeAperture.y + wholeAperture.height) 
+			 selectedAperture.y = wholeAperture.y + wholeAperture.height - selectedAperture.height;
+		     apCenter.x = selectedAperture.x + selectedAperture.width/2;
+		     apCenter.y = selectedAperture.y + selectedAperture.height/2;
+		 } else {
+		     var extent:Number = uint(Point.distance(apCenter, wholeApCenter));
+		     if (extent + r*wholeAperture.width > wholeAperture.width/2) {
+			 var scale:Number = (wholeAperture.width/2 - r*wholeAperture.width)/extent;
+			 apCenter.x = (apCenter.x - wholeApCenter.x) * scale + wholeApCenter.x;
+			 apCenter.y = (apCenter.y - wholeApCenter.y) * scale + wholeApCenter.y;
+			 selectedAperture.x = apCenter.x - selectedAperture.width/2;
+			 selectedAperture.y = apCenter.y - selectedAperture.height/2;
+		     }
+		 }
+		 
+		 u = (apCenter.x - wholeApCenter.x)/wholeAperture.width;
+		 v = (apCenter.y - wholeApCenter.y)/wholeAperture.height;
+		 
+		 event.updateAfterEvent();
+		 render();
+	     }
+	 }
+	 
+	 private function render():void {
+	     if (lightField == null || !lightField.isFullyLoaded()) return;
+	     lightField.render(u, v, r, 1 - focusSlider.value, output.source.bitmapData, angularSamples);
+	 }
+	 
+      ]]>
+</mx:Script>
+
+<mx:Canvas id="wholeAppCanvas">
+<mx:VBox backgroundColor="0xcccccc" borderStyle="solid" borderThickness="2">
+
+<mx:HBox id="buttonBox" horizontalGap="1" backgroundColor="0xdddddd" borderStyle="solid" borderThickness="2" paddingLeft="2" paddingRight="2" paddingTop="2" paddingBottom="2" width="100%">
+  <mx:Button id="helpButton" label = "How Do I Use This?" emphasized="true" />
+  <mx:Button id="pinholeButton" label = "Pinhole Aperture"/>
+  <mx:Button id="fullApertureButton" label = "Full Aperture"/>
+  <mx:CheckBox id="angularSamplesCheckBox" label = "Show Angular Sample Locations" paddingLeft="8"/>
+</mx:HBox>
+
+<mx:HBox verticalAlign="center"> 
+  <mx:Canvas id="canvas" height="562">      
+    <mx:Box id="apertureControl" width="300" height="512" x="0" y="0"/>
+    <mx:Box id="wholeAperture" width="200" height="200" x="50" y="156"/>
+    <mx:Box id="selectedAperture" width="4" height="4" x="148" y="254"/>	
+    <mx:Box id="angularSamples" width="200" height="200" x="50" y="156" visible="false"/>
+    <mx:Image id="output" width="512" height="512" x="300" y="10"/>	
+    <mx:ProgressBar id="loadingProgressBar" label="Downloading light field ..." mode="manual" width="384" height="256" x="364" y="266"/>
+
+  </mx:Canvas>
+
+  <mx:VBox paddingTop="10" paddingBottom="10" paddingLeft="10" paddingRight="10" height="100%">
+      <mx:VSlider id="focusSlider" labels="['Near Focus', 'Far Focus']" minimum="0" maximum="1" tickInterval="0.1" snapInterval="0.01" allowTrackClick="true" liveDragging="true" height="100%" width="100" showDataTip="false" value="0.5" />
+  </mx:VBox>
+
+</mx:HBox>
+
+</mx:VBox>
+
+<mx:Canvas id="help" width="300" height="300" x="15" y="35" visible="false">
+  <mx:TextArea id="helpText" x="0" y="0" width="260" height="135" 
+  paddingBottom="10" paddingTop="10" paddingLeft="10" paddingRight="10" 
+  borderThickness="2" backgroundAlpha="0.75" cornerRadius="20" editable="false" verticalScrollPolicy="off" />
+  <mx:HBox x="20" width="220" y="105" horizontalGap="1" horizontalAlign="right">
+    <mx:Button id="helpBackButton" label="Back"/>
+    <mx:Button id="helpNextButton" label="Next"/>
+    <mx:Button id="helpCloseButton" label="Close"/>
+  </mx:HBox>
+</mx:Canvas>
+
+
+</mx:Canvas>
+</mx:Application>
