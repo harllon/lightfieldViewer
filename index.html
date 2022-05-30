@@ -152,5 +152,133 @@
             </div>
         </div>
     </div>
+    <script>
+       // var imgArray = new Array();
+        //var imgSrc1 = './images/splash class room image.jpg';
+        //var imgSrc2 = './images/splash class room image.jpg';
+        //var imgSrc3 = './images/splash class room image.jpg';
+        //var imgSrc4 = './images/splash class room image.jpg';
+        //imgArray.push([imgSrc1, imgSrc2])
+        
+        /*imgArray[0] = new Image();
+        imgArray[0].src = 'img/00.png';
+        var eof = false;
+        var i = 0;*/
+        /*const fs = require('fs');
+        filenames = fs.readdirSync(__dirname);
+        console.log("\nCurrent directory filenames:");
+        filenames.forEach(file => {
+            console.log(file);
+        });*/
+        /*while(i<65){
+            try {
+                var file = 'img/airplane/' + i + '.png';
+                imgArray[i] = new Image();
+                imgArray[i].src = file;
+                i++;
+                //throw "myException"; // gera uma exceção
+            }
+            catch (e) {
+                // declarações para manipular quaisquer exceções
+                eof = true; // passa o objeto de exceção para o manipulador de erro
+            }
+
+        }*/
+
+        /*imgArray[1] = new Image();
+        imgArray[1].src = 'img/01.png';
+
+        imgArray[2] = new Image();
+        imgArray[2].src = 'img/02.png';
+
+        imgArray[3] = new Image();
+        imgArray[3].src = 'img/10.png';
+
+        imgArray[4] = new Image();
+        imgArray[4].src = 'img/11.png';
+
+        imgArray[5] = new Image();
+        imgArray[5].src = 'img/12.png';
+
+        imgArray[6] = new Image();
+        imgArray[6].src = 'img/20.png';
+
+        imgArray[7] = new Image();
+        imgArray[7].src = 'img/21.png';
+
+        imgArray[8] = new Image();
+        imgArray[8].src = 'img/22.png';
+
+        var matrixArray = new Array();
+        var j = 0;
+        for(var i=0; i<3;i++){
+            matrixArray[i] = new Array();
+            goal = true;
+            while(goal == true && j < 9){
+                matrixArray[i].push(imgArray[j]);
+                j++;
+                if(j%3 == 0){
+                    goal = false;
+                }
+            }
+        }*/
+
+       /* function loadImage(i, j, matrixArray){
+            document.getElementById("mainImage").src = matrixArray[i][j].src;
+        }
+
+        function loadImage2(i, imgArray){
+            document.getElementById("mainImage").src = imgArray[i].src;
+        }
+
+        var total = matrixArray.length*matrixArray[0].length;
+        //var radioArray = new Array();
+        var container = document.getElementById('container');
+        for(var i = 0; i< total; i++){
+            var radiobox = document.createElement('input');
+            radiobox.type = 'radio';
+            radiobox.name = "myRadio";
+            //radiobox.id = 'myRadio';
+            radiobox.value = i;
+            //radiobox.onchange = getImage(radiobox);
+            if(i != 0 && i%3 == 0){
+                var newline = document.createElement('br');
+                container.appendChild(newline);
+            }
+            container.appendChild(radiobox);
+            //radiobox.onchange = "getImage()"
+            //radioArray.push(radiobox);
+        }
+        var radios = document.querySelectorAll('input[type=radio][name="myRadio"]');
+
+        function changeHandler(event) {
+            console.log(this.value);
+            loadImage2(this.value, imgArray)
+            
+        }
+
+        Array.prototype.forEach.call(radios, function(radio) {
+            radio.addEventListener('change', changeHandler);
+        });*/
+
+        /*var radiobox = document.createElement('input');
+        radiobox.type = 'radio';
+        radiobox.id = 'contact';
+        radiobox.value = 'email';
+    
+        var label = document.createElement('label')
+        label.htmlFor = 'contact';
+    
+        var description = document.createTextNode('Email');
+        label.appendChild(description);
+    
+        var newline = document.createElement('br');
+    
+        var container = document.getElementById('container');
+        container.appendChild(radiobox);
+        container.appendChild(label);
+        container.appendChild(newline);*/
+
+    </script>
 </body>
 </html>
